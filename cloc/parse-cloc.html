@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Cloc parse</title>
+    <style>
+        .progress-bar {
+            width: 100%;
+            background-color: #afe8e3;
+        }
+
+        .progress {
+            height: 20px;
+            background-color: #4CAF50;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: #b8ebe7;
+            width: calc(100% - 5 * 100px);
+        }
+    </style>
+</head>
+
+<body>
+    <template>
+        <div class="progress-bar">
+            <div class="progress" style="width: 50%;"></div>
+        </div>
+    </template>
+    <table>
+        <thead>
+            <tr>
+                <th>Language</th>
+                <th>Files</th>
+                <th>Blank</th>
+                <th>Comment</th>
+                <th>Code</th>
+                <th>Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+    <input type="file" id="file" name="file" />
+    <script>
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var report = e.target.result;
+                var rows = report.split('\n');
+                var data = [];
+                var headers = ''
+                for (var i = 0; i < rows.length; i++) {
+                    var row = rows[i].trim();
+                    if (row.startsWith('Language')) {
+                        headers = row.split(/\s+/);
+                    } else if (row.startsWith('-')) {
+                        continue;
+                    } else if (row.startsWith('SUM:')) {
+                        break;
+                    } else if (headers.length == 0) {
+                        continue;
+                    } else {
+                        var values = row.split(/\s+(?=\d)/);
+                        var obj = {};
+                        for (var j = 0; j < headers.length; j++) {
+                            obj[headers[j]] = values[j];
+                        }
+                        data.push(obj);
+                    }
+                }
+                var total = 0;
+                for (var i = 0; i < data.length; i++) {
+                    total += parseInt(data[i]['code']);
+                }
+                var table = document.querySelector('table');
+                for (var i = 0; i < data.length; i++) {
+                    var row = document.createElement('tr');
+                    var lang = document.createElement('td');
+                    lang.textContent = data[i]['Language'];
+                    row.appendChild(lang);
+                    var files = document.createElement('td');
+                    files.textContent = data[i]['files'];
+                    row.appendChild(files);
+                    var blank = document.createElement('td');
+                    blank.textContent = data[i]['blank'];
+                    row.appendChild(blank);
+                    var comment = document.createElement('td');
+                    comment.textContent = data[i]['comment'];
+                    row.appendChild(comment);
+                    var code = document.createElement('td');
+                    code.textContent = data[i]['code'];
+                    row.appendChild(code);
+                    var bar = document.createElement('td');
+                    bar.className = 'bar';
+                    var progressElem = document.createElement('div');
+                    var barWidth = Math.floor(parseInt(data[i]['code']) / total * 100);
+                    progressElem.style.width = barWidth + '%';
+                    progressElem.className = 'progress';
+                    bar.appendChild(progressElem);
+                    row.appendChild(bar);
+                    table.appendChild(row);
+                }
+            }
+            reader.readAsText(files[0]);
+        }
+        document.getElementById('file').addEventListener('change', handleFileSelect, false);
+    </script>
+</body>
